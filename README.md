@@ -21,10 +21,20 @@ Para este desafio, decidi implementar uma **arquitetura em camadas**, separando 
 
 ### ⚙️ Boas práticas aplicadas
 
-- **Princípios do SOLID**
-  - **S**: Single Responsibility – Cada classe tem apenas uma responsabilidade clara.
-  - **O**: Open/Closed – Código aberto para extensão, fechado para modificação (ex.: Responses genéricos).
-  - **D**: Dependency Inversion – Dependências injetadas via construtor, facilitando testes e manutenção.
+S — Single Responsibility Principle
+Cada classe do sistema possui uma responsabilidade única e bem definida. Por exemplo, os Handlers lidam exclusivamente com a lógica de requisição, enquanto as entidades encapsulam regras de negócio.
+
+O — Open/Closed Principle
+O código está aberto para extensão, mas fechado para modificação. Isso é evidenciado no uso de Responses genéricos e estruturas reutilizáveis como Requests e Enums, que facilitam adaptações futuras sem alterações diretas nas implementações existentes.
+
+L — Liskov Substitution Principle
+Esse princípio não foi diretamente aplicável no contexto do projeto, já que não houve uso de herança entre classes. Porém, a estrutura adotada está preparada para futura extensão com heranças respeitando esse princípio.
+
+I — Interface Segregation Principle
+As interfaces foram criadas para definir contratos claros entre camadas, como a ITaskHandler, garantindo que cada interface exponha apenas o necessário, evitando implementações obrigatórias de métodos desnecessários.
+
+D — Dependency Inversion Principle
+As dependências (como DbContext e ILogger) são injetadas via construtor nos Handlers, o que desacopla as classes concretas e facilita a criação de testes unitários e a manutenção do código.
 
 - **Design Patterns**
   - **Handler Pattern** – Organiza os fluxos por operações específicas, desacoplado da camada de roteamento.
