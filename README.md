@@ -87,3 +87,4 @@ Remove uma tarefa específica pelo ID.
 
 Projeto preparado para evoluir com integrações, autenticação/autorizacão e persistência definitiva se necessário.
 
+![Capturar](https://github.com/user-attachments/assets/6ecab6de-32b9-4778-ae3e-e17e10aa0e59)
