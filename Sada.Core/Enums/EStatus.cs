@@ -10,6 +10,6 @@ namespace Sada.Core.Enums
     {
         Pendente = 0,
         Progresso = 1,
-        Concluido = 2
+        Concluida = 2
     }
 }

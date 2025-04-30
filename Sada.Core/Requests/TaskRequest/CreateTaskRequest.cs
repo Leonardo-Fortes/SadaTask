@@ -14,11 +14,11 @@ namespace Sada.Core.Requests.Task
 
         [Required(ErrorMessage = "Titulo Inválido")]
         [MaxLength(180, ErrorMessage = "O titulo deve ter até 180 caracteres")]
-        public string Title { get; private set; } = string.Empty;
-        public string? Description { get; private set; } = string.Empty;
+        public string Title { get;  set; } = string.Empty;
+        public string? Description { get;  set; } = string.Empty;
 
-        public DateTime? ExpirationDate { get; private set; }
+        public DateTime? ExpirationDate { get;  set; }
 
-        public EStatus Status { get; private set; }
+        public EStatus Status { get;  set; }
     }
 }

@@ -3,13 +3,15 @@ using Sada.Api.Data;
 using Sada.Core.Entities;
 using Sada.Core.Handlers;
 using Sada.Core.Requests.Task;
+using Sada.Core.Requests.TaskRequest;
 using Sada.Core.Responses;
 using System.Threading.Tasks;
 
 namespace Sada.Api.HandlersApi
 {
-    public class TaskHandler(AppDbContext context) : ITaskHandler
+    public class TaskHandler(AppDbContext context, ILogger<TaskHandler> logger) : ITaskHandler
     {
+       
         public async Task<Response<TaskSada?>> CreateAsync(CreateTaskRequest request)
         {
             try
@@ -17,11 +19,12 @@ namespace Sada.Api.HandlersApi
                 var task = new TaskSada(request.Title, request.Description, request.ExpirationDate, request.Status);
                 await context.Tasks.AddAsync(task);
                 await context.SaveChangesAsync();
-                return new Response<TaskSada?>(task, 201, "Task criada com sucesso");
+                return new Response<TaskSada?>(task, 201, "Tarefa criada com sucesso");
             }
-            catch
+            catch(Exception ex) 
             {
-                return new Response<TaskSada?>(null, 500, "Não foi possivel criar a task");
+                logger.LogWarning(ex,"Falha ao criar");
+                return new Response<TaskSada?>(null, 500, "Falha ao criar");
             }
         }
 
@@ -31,33 +34,37 @@ namespace Sada.Api.HandlersApi
             {
                 var task = await context.Tasks.FirstOrDefaultAsync(x => x.Id == request.Id);
                 if (task is null)
-                    return new Response<TaskSada?>(null, 404, "Task não encontrada");
+                {
+                    logger.LogWarning("Tarefa não encontrada");
+                    return new Response<TaskSada?>(null, 404, "Tarefa não encontrada");
+                }
 
                 context.Tasks.Remove(task);
                 await context.SaveChangesAsync();
-                return new Response<TaskSada?>(task, message: "Task removida com sucesso!");
+                return new Response<TaskSada?>(task, message: "Tarefa removida com sucesso!");
             }
-            catch
+            catch(Exception ex)
             {
-                return new Response<TaskSada?>(null, 404, "Não foi possivel remover a Task");
+                logger.LogWarning(ex,"Falha ao remover");
+                return new Response<TaskSada?>(null, 500, "Falha ao remover");
             }
         }
 
-        public async Task<PagedResponse<List<TaskSada?>>> GetAllTasksAsync(GetAllTaskRequest request)
+        public async Task<Response<List<TaskSada>>> GetAllAsync(GetAllTaskRequest request)
         {
             try
             {
-                var query = context.Tasks.AsNoTracking().OrderBy(x => x.Title);
-                var task = await query.Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize).ToListAsync();
-                var count = await query.CountAsync();
-                
-                return new PagedResponse<List<TaskSada?>>(task, count, request.PageNumber, request.PageSize);
+                var tasks = await context.Tasks.AsNoTracking().ToListAsync();
+
+                return new Response<List<TaskSada>>(tasks, 200, "Tarefas consultadas com sucesso");
             }
-            catch
+            catch(Exception ex)
             {
-                return new PagedResponse<List<TaskSada?>>(null, 500, "Não foi possivel consultar as categorias");
+                logger.LogWarning(ex, "Falha ao listar todas");
+                return new Response<List<TaskSada>>(null, 500, "Falha na consulta");
             }
         }
+
 
         public async Task<Response<TaskSada?>> GetByIdAsync(GetTaskByIdRequest request)
         {
@@ -65,28 +72,65 @@ namespace Sada.Api.HandlersApi
             {
                 var task = await context.Tasks.AsNoTracking().FirstOrDefaultAsync(x => x.Id == request.Id);
                 return task is null ?
-                    new Response<TaskSada?>(null, 404, "Task não encontrada")
-                    : new Response<TaskSada?>(task, message: "Task não encontrada");
+                    new Response<TaskSada?>(null, 404, "Tarefa não encontrada")
+                    : new Response<TaskSada?>(task, message: "Tarefa não encontrada");
             }
-            catch
+            catch(Exception ex)
             {
-                return new Response<TaskSada?>(null, 404, "Não foi possivel encontrar a Task");
+                logger.LogWarning(ex, "Falha ao listar por Id");
+                return new Response<TaskSada?>(null, 500, "Falha na consulta");
             }
         }
+
+        public async Task<Response<List<TaskSada>>> GetByParametersAsync(GetTaskByParametersRequest request)
+        {
+            try
+            {
+                if (request.Status is null && request.ExpirationDate is null)
+                    
+                return new Response<List<TaskSada>>(null, 400, "É necessário informar ao menos um parâmetro");
+
+                var query = context.Tasks.AsNoTracking().AsQueryable();
+
+                if (request.ExpirationDate.HasValue)
+                {
+                    query = query.Where(x => x.ExpirationDate.HasValue && x.ExpirationDate.Value.Date <= request.ExpirationDate.Value.Date);
+                }
+
+
+                if (request.Status is not null)
+                    query = query.Where(x => x.Status == request.Status);
+
+                var tasks = await query.ToListAsync();
+
+                return new Response<List<TaskSada>>(tasks, 200, "Tarefas consultadas com sucesso");
+            }
+            catch(Exception ex)
+            {
+                logger.LogWarning(ex, "Falha ao listar por periodo");
+                return new Response<List<TaskSada>>(null, 500, "Falha na consulta");
+            }
+        }
+
+  
 
         public async Task<Response<TaskSada?>> UpdateAsync(UpdateTaskRequest request)
         {
             try
             {
                 var task = await context.Tasks.FirstOrDefaultAsync(x => x.Id == request.Id);
-                
+                if (task is null)
+                    return new Response<TaskSada?>(null, 404, "Tarefa não encontrada");
+
+                task.AtualizaTask(request.Title, request.Description, request.ExpirationDate, request.Status);
+                await context.SaveChangesAsync();
+                return new Response<TaskSada?>(task, 201, "Tarefa atualizada com sucesso");
             }
             catch
             {
-
+                return new Response<TaskSada?>(null, 500, "Falha ao atualizar");
             }
         }
-
 
     }
 }
