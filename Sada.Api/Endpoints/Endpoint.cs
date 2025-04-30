@@ -10,9 +10,7 @@ namespace Sada.Api.Endpoints
         {
             var endpoints = app.MapGroup("");
 
-            endpoints.MapGroup("/")
-                .WithTags("Health check")
-                .MapGet("/", () => new { message = "OK" });
+            
 
             endpoints.MapGroup("v1/tarefas").WithTags("Tasks")
             .MapEndpoint<CreateTaskEndpoint>()
