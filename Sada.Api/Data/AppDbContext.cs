@@ -11,7 +11,8 @@ namespace Sada.Api.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Notification>().HasNoKey();
+         
+         
         }
     }
 }

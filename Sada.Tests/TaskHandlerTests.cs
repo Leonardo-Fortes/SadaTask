@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Sada.Api.Data;
 using Sada.Api.HandlersApi;
-using Sada.Core.Entities;
 using Sada.Core.Enums;
 using Sada.Core.Requests.Task;
 using Sada.Core.Requests.TaskRequest;

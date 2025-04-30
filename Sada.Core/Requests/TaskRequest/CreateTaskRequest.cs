@@ -18,7 +18,7 @@ namespace Sada.Core.Requests.Task
         public string? Description { get;  set; } = string.Empty;
 
         public DateTime? ExpirationDate { get;  set; }
-
+        [EnumDataType(typeof(EStatus))]
         public EStatus Status { get;  set; }
     }
 }

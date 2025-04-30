@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sada.Api.Data;
 using Sada.Core.Entities;
+using Sada.Core.Enums;
 using Sada.Core.Handlers;
 using Sada.Core.Requests.Task;
 using Sada.Core.Requests.TaskRequest;
@@ -15,7 +16,13 @@ namespace Sada.Api.HandlersApi
         public async Task<Response<TaskSada?>> CreateAsync(CreateTaskRequest request)
         {
             try
-            {
+            {   if(request.ExpirationDate < DateTime.Now)
+                    return new Response<TaskSada?>(null, 400, "A data de expiração não pode ser menor que a data atual");
+
+                if (!Enum.IsDefined(typeof(EStatus), request.Status))
+                {
+                    return new Response<TaskSada?>(null, 400, "Status inválido");
+                }
                 var task = new TaskSada(request.Title, request.Description, request.ExpirationDate, request.Status);
                 await context.Tasks.AddAsync(task);
                 await context.SaveChangesAsync();
@@ -86,16 +93,18 @@ namespace Sada.Api.HandlersApi
         {
             try
             {
+
                 if (request.Status is null && request.ExpirationDate is null)
                     
                 return new Response<List<TaskSada>>(null, 400, "É necessário informar ao menos um parâmetro");
 
-                var query = context.Tasks.AsNoTracking().AsQueryable();
+                if (request.ExpirationDate is not null && request.ExpirationDate.Value.Date < DateTime.Now.Date)
+                    return new Response<List<TaskSada>>(null, 400, "A data de expiração não pode ser menor que a data atual");
 
-                if (request.ExpirationDate.HasValue)
-                {
+                var query = context.Tasks.AsNoTracking().AsQueryable();
+         
+                if (request.ExpirationDate is not null )               
                     query = query.Where(x => x.ExpirationDate.HasValue && x.ExpirationDate.Value.Date <= request.ExpirationDate.Value.Date);
-                }
 
 
                 if (request.Status is not null)
@@ -118,6 +127,13 @@ namespace Sada.Api.HandlersApi
         {
             try
             {
+                if (request.ExpirationDate < DateTime.Now)
+                    return new Response<TaskSada?>(null, 400, "A data de expiração não pode ser menor que a data atual");
+
+                if (!Enum.IsDefined(typeof(EStatus), request.Status))
+                {
+                    return new Response<TaskSada?>(null, 400, "Status inválido");
+                }
                 var task = await context.Tasks.FirstOrDefaultAsync(x => x.Id == request.Id);
                 if (task is null)
                     return new Response<TaskSada?>(null, 404, "Tarefa não encontrada");

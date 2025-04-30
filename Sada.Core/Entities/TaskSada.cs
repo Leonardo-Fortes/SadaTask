@@ -2,6 +2,7 @@
 using Flunt.Validations;
 using Sada.Core.Enums;
 using Sada.Core.Requests.Task;
+using Sada.Core.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Sada.Core.Entities
 {
-    public class TaskSada : Notifiable<Notification>
+    public class TaskSada 
     {
         public TaskSada(string title, string? description, DateTime? expirationDate, EStatus status) 
         {
@@ -18,18 +19,6 @@ namespace Sada.Core.Entities
             Description = description;
             ExpirationDate = expirationDate;
             Status = status;
-
-
-            AddNotifications(new Contract<Notification>()
-                .Requires()
-                .IsNotNullOrEmpty(title, "Title", "Título é obrigatório"));
-
-            if (expirationDate.HasValue)
-            {
-                AddNotifications(new Contract<Notification>()
-                    .Requires()
-                    .IsGreaterThan(expirationDate.Value, DateTime.UtcNow, "ExpirationDate", "A data de expiração deve ser maior que agora"));
-            }
 
         }
      
